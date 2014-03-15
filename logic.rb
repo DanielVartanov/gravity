@@ -8,12 +8,17 @@ module Gravity
     def initialize
       self.metal_ball = MetalBall.new Geometry::Point.new(0, -400), Geometry::Vector.new(0, 90)
       self.magnets = [
-                      Magnet.new(Geometry::Point.new(-50, 0), self)
+                      Magnet.new(Geometry::Point.new(-50, 0), self),
+                      Magnet.new(Geometry::Point.new(0, 50), self),
+                      Magnet.new(Geometry::Point.new(10, 150), self),
+                      Magnet.new(Geometry::Point.new(10, 250), self),
+                      Magnet.new(Geometry::Point.new(400, 150), self),
                      ]
     end
 
     def update!(seconds)
       metal_ball.update! seconds
+
       magnets.each do |magnet|
         magnet.update! seconds
       end
@@ -32,16 +37,27 @@ module Gravity
   end
 
   class Magnet < Struct.new(:position, :world)
+    def attraction_force(metal_ball)
+      distance = Geometry.distance(position, metal_ball.position)
+      1000000 / distance ** 2
+    end
+
     def update!(seconds)
       metal_ball = world.metal_ball
 
-      distance = Geometry.distance(position, metal_ball.position)
-      attraction_force = 1000000 / distance ** 2
-
-      attraction_force_vector = Geometry::Vector.by_end_points(metal_ball.position, self.position).unit_vector * attraction_force * seconds
+      attraction_force_vector = Geometry::Vector.by_end_points(metal_ball.position, self.position).unit_vector * attraction_force(metal_ball) * seconds
 
       metal_ball.velocity = metal_ball.velocity + attraction_force_vector
     end
+  end
+end
+
+Geometry::Point.class_eval do
+  def rotate_around(center, angle)
+    diff = Point.new(x - center.x, y - center.y)
+
+    Point.new(center.x + diff.x * Math.cos(angle) - diff.y * Math.sin(angle),
+              center.y + diff.x * Math.sin(angle) + diff.y * Math.cos(angle))
   end
 end
 
@@ -56,5 +72,13 @@ Geometry::Vector.class_eval do
 
   def unit_vector
     self / modulus
+  end
+
+  def rotate(angle)
+    self.to_point.rotate_around(Point(0, 0), angle).to_vector
+  end
+
+  def to_point
+    Point x, y
   end
 end

@@ -7,18 +7,36 @@ module Gravity
     end
 
     def draw!
-      draw_metal_ball
       draw_magnets
+      draw_metal_ball
     end
 
     def draw_metal_ball
-      screen.draw_circle_s(world.metal_ball.position.to_screen_coordinates, 5, [0, 191, 255])
+      metal_ball = world.metal_ball
+
+      screen.draw_circle_s(metal_ball.position.to_screen_coordinates, 5, [0, 191, 255])
+      draw_vector_arrow metal_ball.position, metal_ball.velocity
     end
 
     def draw_magnets
       world.magnets.each do |magnet|
+        draw_attraction_force magnet, world.metal_ball
         screen.draw_circle_s(magnet.position.to_screen_coordinates, 3, [255, 90, 0])
       end
+    end
+
+    def draw_vector_arrow(origin_point, vector)
+      end_point = origin_point.advance_by vector
+
+      screen.draw_line origin_point.to_screen_coordinates, end_point.to_screen_coordinates, [0, 90, 255]
+      screen.draw_circle_s end_point.to_screen_coordinates, 2, [0, 90, 255]
+    end
+
+    def draw_attraction_force(magnet, metal_ball)
+      coefficient = magnet.attraction_force(metal_ball) / 200
+      color = [255, 0, 0].map(&coefficient.method(:*))
+
+      screen.draw_line magnet.position.to_screen_coordinates, metal_ball.position.to_screen_coordinates, color
     end
 
     def extend_point_class

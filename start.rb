@@ -24,7 +24,7 @@ screen.title = "Gravity"
 world = Gravity::World.new
 graphics = Gravity::Graphics.new screen, world
 
-TIME_QUANTUM_LENGTH = 1e-1
+TIME_QUANTUM_LENGTH = 1e-4
 
 def split_into_time_quantums(seconds_passed)
   time_quantums = [TIME_QUANTUM_LENGTH] * (seconds_passed.to_f / TIME_QUANTUM_LENGTH).to_i
